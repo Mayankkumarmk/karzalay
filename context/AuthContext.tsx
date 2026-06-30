@@ -40,7 +40,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // On mount: try to restore session
   useEffect(() => {
-    fetchUser().finally(() => setIsLoading(false));
+    fetchUser().finally(() => {
+      setTimeout(() => setIsLoading(false), 0);
+    });
   }, []);
 
   const login = async (email: string, password: string) => {

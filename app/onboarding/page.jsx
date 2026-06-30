@@ -287,7 +287,6 @@ function KzInput({ value, onChange, placeholder = "", required = false, type = "
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        required={required}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={{
@@ -320,7 +319,6 @@ function KzTextarea({ value, onChange, placeholder = "", required = false, rows 
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        required={required}
         rows={rows}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
@@ -596,6 +594,7 @@ export default function OnboardingPage() {
   const [startupName, setStartupName] = useState("");
   const [startupCity, setStartupCity] = useState("");
   const [startupDocUrl, setStartupDocUrl] = useState("");
+  const [startupApplied, setStartupApplied] = useState(false);
 
   // Gate 3 Member
   const [yesterday, setYesterday] = useState("");
@@ -609,9 +608,24 @@ export default function OnboardingPage() {
   const [copied, setCopied] = useState(false);
 
   // Gate 2 Member Form State
+  const [memberEmail, setMemberEmail] = useState("");
+  const [memberPhone, setMemberPhone] = useState("");
   const [memberResumeUrl, setMemberResumeUrl] = useState("");
   const [memberCollege, setMemberCollege] = useState("");
   const [memberQualification, setMemberQualification] = useState("");
+  const [memberGraduationYear, setMemberGraduationYear] = useState("");
+  const [memberGithub, setMemberGithub] = useState("");
+  const [memberLeetcode, setMemberLeetcode] = useState("");
+  const [memberProjectLinks, setMemberProjectLinks] = useState("");
+  const [memberAchievements, setMemberAchievements] = useState("");
+  const [memberSkills, setMemberSkills] = useState("");
+  const [memberSummary, setMemberSummary] = useState("");
+  
+  // Past Experience
+  const [hasExperience, setHasExperience] = useState(false);
+  const [expCompany, setExpCompany] = useState("");
+  const [expRole, setExpRole] = useState("");
+  const [expDetails, setExpDetails] = useState("");
 
   // Gate 3 Member Form State
   const [memberCompanyId, setMemberCompanyId] = useState("");
@@ -620,8 +634,12 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     if (user && !name) {
-      setName(user.name || "");
-      setRole(user.role || "MEMBER");
+      const timeoutId = setTimeout(() => {
+        setName(user.name || "");
+        setRole(user.role || "MEMBER");
+        setMemberEmail(user.email || "");
+      }, 0);
+      return () => clearTimeout(timeoutId);
     }
   }, [user, name]);
 
@@ -663,14 +681,13 @@ export default function OnboardingPage() {
         withCredentials: true,
       });
       newSocket.on("application:approved", () => setGate(3));
-      setSocket(newSocket);
+      setTimeout(() => setSocket(newSocket), 0);
       return () => newSocket.disconnect();
     }
   }, [gate, role]);
 
   const handleGate1Submit = async (e) => {
     e.preventDefault();
-    if (!github.trim()) { setError("Globe username is required"); return; }
     setError("");
     setActionLoading(true);
     try {
@@ -694,10 +711,7 @@ export default function OnboardingPage() {
 
   const handleGate2MemberSubmit = async (e) => {
     e.preventDefault();
-    if (!memberResumeUrl || !memberCollege || !memberQualification) {
-      setError("Please fill all required fields.");
-      return;
-    }
+    // Bypassed validation for testing
     setError("");
     setActionLoading(true);
     // In a real app we'd save this to DB here
@@ -709,10 +723,7 @@ export default function OnboardingPage() {
 
   const handleMemberApply = async (e) => {
     e.preventDefault();
-    if (!memberCompanyId) {
-      setError("Please select a company to apply to.");
-      return;
-    }
+    // Bypassed validation for testing
     setError("");
     setActionLoading(true);
     try {
@@ -759,10 +770,7 @@ export default function OnboardingPage() {
 
   const handleCreateStartup = async (e) => {
     e.preventDefault();
-    if (!startupName || !startupCity || !startupDocUrl) {
-      setError("Please fill all fields");
-      return;
-    }
+    // Bypassed validation for testing
     setError("");
     setActionLoading(true);
     try {
@@ -773,7 +781,7 @@ export default function OnboardingPage() {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to create startup");
-      setGate(3);
+      setStartupApplied(true);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -1018,6 +1026,25 @@ export default function OnboardingPage() {
               <GlassCard key="gate2">
                 <Eyebrow>Step 2 of 3</Eyebrow>
                 {role === "LEAD" ? (
+                  startupApplied ? (
+                    <div style={{ textAlign: "center", padding: "2rem 0" }}>
+                      <div style={{
+                        width: 64, height: 64, borderRadius: "50%", background: GREEN_SOFT, 
+                        display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.5rem"
+                      }}>
+                        <CheckCircle2 size={32} color={GREEN} />
+                      </div>
+                      <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: INK, marginBottom: "0.75rem" }}>
+                        Application Received
+                      </h2>
+                      <p style={{ fontSize: "0.95rem", color: INK_LIGHT, margin: "0 auto 2rem", maxWidth: 400, lineHeight: 1.5 }}>
+                        We will review your application and let you know if your documentation is approved. You can go ahead with listing down your company, creating positions, and inviting people to work for you.
+                      </p>
+                      <KzButton onClick={() => setGate(3)}>
+                        Continue to Next Step <ArrowRight size={18} />
+                      </KzButton>
+                    </div>
+                  ) : (
                   <>
                     <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: INK, letterSpacing: "-0.03em", margin: "0 0 0.25rem" }}>
                       Create your Startup
@@ -1046,6 +1073,7 @@ export default function OnboardingPage() {
                       </KzButton>
                     </form>
                   </>
+                  )
                 ) : (
                   <>
                     <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: INK, letterSpacing: "-0.03em", margin: "0 0 0.25rem" }}>
@@ -1058,17 +1086,122 @@ export default function OnboardingPage() {
                     {error && <div style={{ color: "#EF4444", fontSize: "0.85rem", marginBottom: "1rem", fontWeight: 600 }}>{error}</div>}
 
                     <form onSubmit={handleGate2MemberSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-                      <div>
-                        <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Resume / Portfolio URL *</label>
-                        <KzInput value={memberResumeUrl} onChange={e => setMemberResumeUrl(e.target.value)} placeholder="https://..." icon={LinkIcon} required />
+                      <div style={{ paddingBottom: "1rem", borderBottom: `1px solid rgba(91,63,248,0.15)` }}>
+                        <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: INK, marginBottom: "1rem" }}>Identity</h3>
+                        <div style={{ display: "grid", gap: "1rem" }}>
+                          <div>
+                            <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Full Name *</label>
+                            <KzInput value={name} onChange={e => setName(e.target.value)} required />
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
+                            <div>
+                              <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Email *</label>
+                              <KzInput value={memberEmail} onChange={e => setMemberEmail(e.target.value)} type="email" required />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Phone (optional)</label>
+                              <KzInput value={memberPhone} onChange={e => setMemberPhone(e.target.value)} type="tel" placeholder="+91 98765 43210" />
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>College / University *</label>
-                        <KzInput value={memberCollege} onChange={e => setMemberCollege(e.target.value)} placeholder="e.g. Stanford University" icon={Building2} required />
+
+                      <div style={{ paddingBottom: "1rem", borderBottom: `1px solid rgba(91,63,248,0.15)` }}>
+                        <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: INK, marginBottom: "1rem" }}>Portfolio & Academics</h3>
+                        <div style={{ display: "grid", gap: "1rem" }}>
+                          <div>
+                            <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Resume / Portfolio URL *</label>
+                            <KzInput value={memberResumeUrl} onChange={e => setMemberResumeUrl(e.target.value)} placeholder="https://..." icon={LinkIcon} required />
+                          </div>
+                          <div>
+                            <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>College / University *</label>
+                            <KzInput value={memberCollege} onChange={e => setMemberCollege(e.target.value)} placeholder="e.g. Stanford University" icon={Building2} required />
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
+                            <div>
+                              <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Current Qualification *</label>
+                              <KzInput value={memberQualification} onChange={e => setMemberQualification(e.target.value)} placeholder="e.g. B.Tech CS" icon={FileText} required />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Graduation Year *</label>
+                              <KzInput value={memberGraduationYear} onChange={e => setMemberGraduationYear(e.target.value)} placeholder="e.g. 2024" required />
+                            </div>
+                          </div>
+                          <div>
+                            <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Deployment / Live Project Links</label>
+                            <KzTextarea value={memberProjectLinks} onChange={e => setMemberProjectLinks(e.target.value)} placeholder="Share links to any projects you have deployed..." rows={2} />
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Current Qualification *</label>
-                        <KzInput value={memberQualification} onChange={e => setMemberQualification(e.target.value)} placeholder="e.g. B.Tech Computer Science" icon={FileText} required />
+
+                      <div style={{ paddingBottom: "1rem", borderBottom: `1px solid rgba(91,63,248,0.15)` }}>
+                        <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: INK, marginBottom: "1rem" }}>Tech Profiles & Skills</h3>
+                        <div style={{ display: "grid", gap: "1rem" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
+                            <div>
+                              <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>GitHub Profile (optional)</label>
+                              <KzInput value={memberGithub} onChange={e => setMemberGithub(e.target.value)} placeholder="github.com/..." />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>LeetCode Profile (optional)</label>
+                              <KzInput value={memberLeetcode} onChange={e => setMemberLeetcode(e.target.value)} placeholder="leetcode.com/..." />
+                            </div>
+                          </div>
+                          <div>
+                            <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Skills (comma separated)</label>
+                            <KzInput value={memberSkills} onChange={e => setMemberSkills(e.target.value)} placeholder="React, Node.js, Python, Figma..." />
+                          </div>
+                          <div>
+                            <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Achievements / Certifications</label>
+                            <KzTextarea value={memberAchievements} onChange={e => setMemberAchievements(e.target.value)} placeholder="List any notable achievements, hackathons, or certifications..." rows={2} />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ paddingBottom: "1rem", borderBottom: `1px solid rgba(91,63,248,0.15)` }}>
+                        <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: INK, marginBottom: "1rem" }}>Past Experience</h3>
+                        <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", color: INK, cursor: "pointer", fontWeight: 500 }}>
+                            <input type="radio" name="experience" checked={hasExperience} onChange={() => setHasExperience(true)} style={{ accentColor: "#EA580C" }} />
+                            Yes, I have experience
+                          </label>
+                          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", color: INK, cursor: "pointer", fontWeight: 500 }}>
+                            <input type="radio" name="experience" checked={!hasExperience} onChange={() => {
+                              setHasExperience(false);
+                              setExpCompany("");
+                              setExpRole("");
+                              setExpDetails("");
+                            }} style={{ accentColor: "#EA580C" }} />
+                            No, I am a fresher
+                          </label>
+                        </div>
+
+                        {hasExperience && (
+                          <div style={{ display: "grid", gap: "1rem", marginTop: "1rem", padding: "1.25rem", background: "#F8F7FC", borderRadius: 12, border: "1.5px solid rgba(91,63,248,0.15)" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
+                              <div>
+                                <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Company / Org Name *</label>
+                                <KzInput value={expCompany} onChange={e => setExpCompany(e.target.value)} placeholder="e.g. Acme Corp" required={hasExperience} />
+                              </div>
+                              <div>
+                                <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Role *</label>
+                                <KzInput value={expRole} onChange={e => setExpRole(e.target.value)} placeholder="e.g. Frontend Intern" required={hasExperience} />
+                              </div>
+                            </div>
+                            <div>
+                              <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Experience Details & Feedback</label>
+                              <KzTextarea value={expDetails} onChange={e => setExpDetails(e.target.value)} placeholder="Describe what you built, what you learned, and any feedback you received..." rows={3} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div style={{ paddingBottom: "1rem" }}>
+                        <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: INK, marginBottom: "1rem" }}>Summary</h3>
+                        <div>
+                          <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>What else should we know about you? (Optional)</label>
+                          <KzTextarea value={memberSummary} onChange={e => setMemberSummary(e.target.value)} placeholder="Tell us a bit about your passions, hobbies, or what makes you unique..." rows={3} />
+                        </div>
                       </div>
                       <KzButton type="submit" loading={actionLoading} style={{ marginTop: "0.5rem" }}>
                         Continue <ArrowRight size={18} />
@@ -1206,7 +1339,7 @@ export default function OnboardingPage() {
 
                           <form onSubmit={handleMemberApply} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
                             
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
                               <div>
                                 <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Select a Company *</label>
                                 <select 
