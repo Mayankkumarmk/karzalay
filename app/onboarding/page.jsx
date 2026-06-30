@@ -1077,9 +1077,6 @@ export default function OnboardingPage() {
                     </form>
                   </>
                 )}
-                
-                  </>
-                )}
               </GlassCard>
 
             ) : gate === 3 ? (
