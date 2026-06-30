@@ -609,8 +609,11 @@ export default function OnboardingPage() {
   const [copied, setCopied] = useState(false);
 
   // Gate 2 Member Form State
-  const [memberEmail, setMemberEmail] = useState("");
-  const [memberPhone, setMemberPhone] = useState("");
+  const [memberResumeUrl, setMemberResumeUrl] = useState("");
+  const [memberCollege, setMemberCollege] = useState("");
+  const [memberQualification, setMemberQualification] = useState("");
+
+  // Gate 3 Member Form State
   const [memberCompanyId, setMemberCompanyId] = useState("");
   const [memberRole, setMemberRole] = useState("");
   const [memberReason, setMemberReason] = useState("");
@@ -690,6 +693,21 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleGate2MemberSubmit = async (e) => {
+    e.preventDefault();
+    if (!memberResumeUrl || !memberCollege || !memberQualification) {
+      setError("Please fill all required fields.");
+      return;
+    }
+    setError("");
+    setActionLoading(true);
+    // In a real app we'd save this to DB here
+    setTimeout(() => {
+      setActionLoading(false);
+      setGate(3);
+    }, 400);
+  };
+
   const handleMemberApply = async (e) => {
     e.preventDefault();
     if (!memberCompanyId) {
@@ -708,7 +726,10 @@ export default function OnboardingPage() {
       if (!res.ok) throw new Error("Application failed");
       setApplicationSent(true);
       if (!socket || !socket.connected) {
-        setTimeout(() => setGate(3), 2000);
+        setTimeout(() => {
+          fetch("/api/onboarding/complete", { method: "POST", credentials: "include" }).catch(console.error);
+          setCompleted(true);
+        }, 2000);
       }
     } catch (err) {
       setError(err.message);
@@ -1028,117 +1049,35 @@ export default function OnboardingPage() {
                   </>
                 ) : (
                   <>
-                    <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-                      <h2 style={{ fontSize: "2rem", fontWeight: 800, color: INK, letterSpacing: "-0.03em", margin: "0 0 0.5rem" }}>
-                        Join a company
-                      </h2>
-                      <p style={{ fontSize: "1rem", color: INK_LIGHT, margin: 0, fontWeight: 500 }}>
-                        No experience required. Just show up and start working.
-                      </p>
-                    </div>
+                    <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: INK, letterSpacing: "-0.03em", margin: "0 0 0.25rem" }}>
+                      Your Details
+                    </h2>
+                    <p style={{ fontSize: "0.85rem", color: INK_LIGHT, margin: "0 0 1.75rem" }}>
+                      Provide your professional and educational background.
+                    </p>
 
-                    {applicationSent ? (
-                      <WaitingState onSimulate={async () => {
-                        await fetch("/api/dev/approve-application", { method: "POST" });
-                        setGate(3);
-                      }} />
-                    ) : (
-                      <>
-                        <div style={{ 
-                          display: "flex", justifyContent: "space-between", alignItems: "center", 
-                          padding: "1.25rem 1.5rem", borderRadius: 16, border: `1.5px solid rgba(91,63,248,0.15)`, 
-                          background: "#fff", marginBottom: "2rem", boxShadow: "0 2px 12px rgba(91,63,248,0.04)",
-                          flexWrap: "wrap", gap: "1rem"
-                        }}>
-                          <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-                            <Search size={24} color="#EA580C" />
-                            <div>
-                              <h4 style={{ fontWeight: 700, color: INK, fontSize: "0.95rem", margin: "0 0 0.2rem" }}>Not sure where to start?</h4>
-                              <p style={{ fontSize: "0.85rem", color: INK_LIGHT, margin: 0 }}>Browse companies and find the right fit first.</p>
-                            </div>
-                          </div>
-                          <button onClick={() => router.push('/cities')} style={{ 
-                            padding: "0.6rem 1.25rem", borderRadius: 10, border: `1.5px solid rgba(91,63,248,0.2)`, 
-                            background: "#fff", color: INK, fontSize: "0.85rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", transition: "all 0.2s"
-                          }}>
-                            Browse companies <ArrowRight size={16} />
-                          </button>
-                        </div>
+                    {error && <div style={{ color: "#EF4444", fontSize: "0.85rem", marginBottom: "1rem", fontWeight: 600 }}>{error}</div>}
 
-                        <div style={{ 
-                          padding: "2rem", borderRadius: 16, border: `1px solid rgba(91,63,248,0.1)`, 
-                          background: "#fff", boxShadow: "0 4px 24px rgba(91,63,248,0.06)" 
-                        }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.75rem" }}>
-                            <Sparkles size={20} color="#EA580C" />
-                            <h3 style={{ fontSize: "1.1rem", fontWeight: 800, color: INK, margin: 0 }}>New Joinee Onboarding</h3>
-                          </div>
-                          
-                          {error && <div style={{ color: "#EF4444", fontSize: "0.85rem", marginBottom: "1rem", fontWeight: 600 }}>{error}</div>}
-
-                          <form onSubmit={handleMemberApply} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-                            <div>
-                              <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Full Name *</label>
-                              <KzInput value={name} onChange={e => setName(e.target.value)} required />
-                            </div>
-                            
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                              <div>
-                                <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Email *</label>
-                                <KzInput value={memberEmail} onChange={e => setMemberEmail(e.target.value)} type="email" required />
-                              </div>
-                              <div>
-                                <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Phone (optional)</label>
-                                <KzInput value={memberPhone} onChange={e => setMemberPhone(e.target.value)} type="tel" placeholder="+91 98765 43210" />
-                              </div>
-                            </div>
-
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                              <div>
-                                <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Select a Company *</label>
-                                <select 
-                                  value={memberCompanyId} 
-                                  onChange={e => setMemberCompanyId(e.target.value)} 
-                                  required
-                                  style={{ 
-                                    width: "100%", padding: "0.85rem 1rem", borderRadius: 12, border: "1.5px solid rgba(91,63,248,0.15)", background: "#F8F7FC", color: INK, fontSize: "0.9rem", outline: "none", boxSizing: "border-box", fontFamily: "inherit", fontWeight: 500, appearance: "none" 
-                                  }}
-                                >
-                                  <option value="" disabled>Choose a company...</option>
-                                  {companies.map(c => <option key={c.id} value={c.id}>{c.name} — {c.city}</option>)}
-                                </select>
-                              </div>
-                              <div>
-                                <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Select a Role *</label>
-                                <select 
-                                  value={memberRole} 
-                                  onChange={e => setMemberRole(e.target.value)} 
-                                  required
-                                  style={{ 
-                                    width: "100%", padding: "0.85rem 1rem", borderRadius: 12, border: "1.5px solid rgba(91,63,248,0.15)", background: "#F8F7FC", color: INK, fontSize: "0.9rem", outline: "none", boxSizing: "border-box", fontFamily: "inherit", fontWeight: 500, appearance: "none" 
-                                  }}
-                                >
-                                  <option value="" disabled>Choose a role...</option>
-                                  <option value="frontend">Frontend Developer (Full-time)</option>
-                                  <option value="backend">Backend Developer (Full-time)</option>
-                                  <option value="designer">UI/UX Designer (Full-time)</option>
-                                  <option value="pm">Product Manager (Full-time)</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            <div>
-                              <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Why do you want to join? *</label>
-                              <KzTextarea value={memberReason} onChange={e => setMemberReason(e.target.value)} placeholder="Tell us a bit about yourself and what excites you about this company..." required />
-                            </div>
-
-                            <KzButton type="submit" loading={actionLoading} style={{ marginTop: "0.5rem" }}>
-                              Submit Application <ArrowRight size={18} />
-                            </KzButton>
-                          </form>
-                        </div>
-                      </>
-                    )}
+                    <form onSubmit={handleGate2MemberSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                      <div>
+                        <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Resume / Portfolio URL *</label>
+                        <KzInput value={memberResumeUrl} onChange={e => setMemberResumeUrl(e.target.value)} placeholder="https://..." icon={LinkIcon} required />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>College / University *</label>
+                        <KzInput value={memberCollege} onChange={e => setMemberCollege(e.target.value)} placeholder="e.g. Stanford University" icon={Building2} required />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Current Qualification *</label>
+                        <KzInput value={memberQualification} onChange={e => setMemberQualification(e.target.value)} placeholder="e.g. B.Tech Computer Science" icon={FileText} required />
+                      </div>
+                      <KzButton type="submit" loading={actionLoading} style={{ marginTop: "0.5rem" }}>
+                        Continue <ArrowRight size={18} />
+                      </KzButton>
+                    </form>
+                  </>
+                )}
+                
                   </>
                 )}
               </GlassCard>
@@ -1221,56 +1160,102 @@ export default function OnboardingPage() {
                   </>
                 ) : (
                   <>
-                    <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: INK, letterSpacing: "-0.03em", margin: "0 0 0.25rem" }}>
-                      Your First Standup
-                    </h2>
-                    <p style={{ fontSize: "0.85rem", color: INK_LIGHT, margin: "0 0 1.75rem" }}>
-                      Daily standups are the heartbeat of Karzalay. Share what you're working on — this builds your work history.
-                    </p>
+                    <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+                      <h2 style={{ fontSize: "2rem", fontWeight: 800, color: INK, letterSpacing: "-0.03em", margin: "0 0 0.5rem" }}>
+                        Join a company
+                      </h2>
+                      <p style={{ fontSize: "1rem", color: INK_LIGHT, margin: 0, fontWeight: 500 }}>
+                        No experience required. Just show up and start working.
+                      </p>
+                    </div>
 
-                    <form onSubmit={handleGate3Submit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-                      <KzTextarea
-                        label="What did you do yesterday?"
-                        value={yesterday}
-                        onChange={e => setYesterday(e.target.value)}
-                        placeholder="e.g., Set up the project repo, designed the auth flow..."
-                        required
-                        rows={3}
-                      />
-                      <KzTextarea
-                        label="What will you do today?"
-                        value={today}
-                        onChange={e => setToday(e.target.value)}
-                        placeholder="e.g., Build the login page, integrate the API..."
-                        required
-                        rows={3}
-                      />
-                      <KzTextarea
-                        label="Any blockers?"
-                        value={blockers}
-                        onChange={e => setBlockers(e.target.value)}
-                        placeholder="None — or describe what's blocking you..."
-                        rows={2}
-                      />
+                    {applicationSent ? (
+                      <WaitingState onSimulate={async () => {
+                        await fetch("/api/onboarding/complete", { method: "POST", credentials: "include" }).catch(console.error);
+                        setCompleted(true);
+                      }} />
+                    ) : (
+                      <>
+                        <div style={{ 
+                          display: "flex", justifyContent: "space-between", alignItems: "center", 
+                          padding: "1.25rem 1.5rem", borderRadius: 16, border: `1.5px solid rgba(91,63,248,0.15)`, 
+                          background: "#fff", marginBottom: "2rem", boxShadow: "0 2px 12px rgba(91,63,248,0.04)",
+                          flexWrap: "wrap", gap: "1rem"
+                        }}>
+                          <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                            <Search size={24} color="#EA580C" />
+                            <div>
+                              <h4 style={{ fontWeight: 700, color: INK, fontSize: "0.95rem", margin: "0 0 0.2rem" }}>Not sure where to start?</h4>
+                              <p style={{ fontSize: "0.85rem", color: INK_LIGHT, margin: 0 }}>Browse companies and find the right fit first.</p>
+                            </div>
+                          </div>
+                          <button onClick={() => router.push('/cities')} type="button" style={{ 
+                            padding: "0.6rem 1.25rem", borderRadius: 10, border: `1.5px solid rgba(91,63,248,0.2)`, 
+                            background: "#fff", color: INK, fontSize: "0.85rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", transition: "all 0.2s"
+                          }}>
+                            Browse companies <ArrowRight size={16} />
+                          </button>
+                        </div>
 
-                      <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        padding: "0.75rem 1rem",
-                        background: PURPLE_XSOFT,
-                        borderRadius: 10,
-                        fontSize: "0.78rem",
-                        color: INK_MID,
-                      }}>
-                        <Shield size={15} color={PURPLE} />
-                        Your standup is recorded and contributes to your verifiable credential.
-                      </div>
+                        <div style={{ 
+                          padding: "2rem", borderRadius: 16, border: `1px solid rgba(91,63,248,0.1)`, 
+                          background: "#fff", boxShadow: "0 4px 24px rgba(91,63,248,0.06)" 
+                        }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.75rem" }}>
+                            <Sparkles size={20} color="#EA580C" />
+                            <h3 style={{ fontSize: "1.1rem", fontWeight: 800, color: INK, margin: 0 }}>Select Your Role</h3>
+                          </div>
+                          
+                          {error && <div style={{ color: "#EF4444", fontSize: "0.85rem", marginBottom: "1rem", fontWeight: 600 }}>{error}</div>}
 
-                      <KzButton type="submit" loading={actionLoading}>
-                        <CheckCircle2 size={18} /> Submit Standup
-                      </KzButton>
-                    </form>
+                          <form onSubmit={handleMemberApply} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                            
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                              <div>
+                                <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Select a Company *</label>
+                                <select 
+                                  value={memberCompanyId} 
+                                  onChange={e => setMemberCompanyId(e.target.value)} 
+                                  required
+                                  style={{ 
+                                    width: "100%", padding: "0.85rem 1rem", borderRadius: 12, border: "1.5px solid rgba(91,63,248,0.15)", background: "#F8F7FC", color: INK, fontSize: "0.9rem", outline: "none", boxSizing: "border-box", fontFamily: "inherit", fontWeight: 500, appearance: "none" 
+                                  }}
+                                >
+                                  <option value="" disabled>Choose a company...</option>
+                                  {companies.map(c => <option key={c.id} value={c.id}>{c.name} — {c.city}</option>)}
+                                </select>
+                              </div>
+                              <div>
+                                <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Select a Role *</label>
+                                <select 
+                                  value={memberRole} 
+                                  onChange={e => setMemberRole(e.target.value)} 
+                                  required
+                                  style={{ 
+                                    width: "100%", padding: "0.85rem 1rem", borderRadius: 12, border: "1.5px solid rgba(91,63,248,0.15)", background: "#F8F7FC", color: INK, fontSize: "0.9rem", outline: "none", boxSizing: "border-box", fontFamily: "inherit", fontWeight: 500, appearance: "none" 
+                                  }}
+                                >
+                                  <option value="" disabled>Choose a role...</option>
+                                  <option value="frontend">Frontend Developer (Full-time)</option>
+                                  <option value="backend">Backend Developer (Full-time)</option>
+                                  <option value="designer">UI/UX Designer (Full-time)</option>
+                                  <option value="pm">Product Manager (Full-time)</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label style={{ fontSize: "0.85rem", fontWeight: 700, color: INK_MID, marginBottom: "0.4rem", display: "block" }}>Why do you want to join? *</label>
+                              <KzTextarea value={memberReason} onChange={e => setMemberReason(e.target.value)} placeholder="Tell us a bit about yourself and what excites you about this company..." required />
+                            </div>
+
+                            <KzButton type="submit" loading={actionLoading} style={{ marginTop: "0.5rem" }}>
+                              Finish & Join <ArrowRight size={18} />
+                            </KzButton>
+                          </form>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
               </GlassCard>
