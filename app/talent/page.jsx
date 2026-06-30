@@ -412,7 +412,7 @@ export default function TalentBoard() {
               <RankBadge rank={member.rank} />
 
               {/* Builder */}
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <Link href={`/profile/${member.id}`} style={{ display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none" }}>
                 <div style={{
                   width: 38, height: 38, borderRadius: 10,
                   background: `linear-gradient(135deg, ${PURPLE_XSOFT}, #fff)`,
@@ -429,7 +429,7 @@ export default function TalentBoard() {
                   </div>
                   <span style={{ fontSize: "0.72rem", color: INK_LIGHT }}>{member.streak}-day streak</span>
                 </div>
-              </div>
+              </Link>
 
               {/* Role & Company */}
               <div>
@@ -450,7 +450,7 @@ export default function TalentBoard() {
               {/* Credential Link */}
               <div style={{ textAlign: "right" }}>
                 <Link
-                  href={`/verify/${member.id}`}
+                  href={`/profile/${member.id}`}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
