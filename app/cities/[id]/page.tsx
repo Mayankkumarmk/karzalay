@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Navbar } from '@/components/ui/Navbar';
@@ -69,6 +69,7 @@ export default function CompanyPage() {
   const params = useParams();
   const companyId = params.id as string;
   const company = COMPANIES_DATA[companyId] || COMPANIES_DATA['raasta-maps']; // fallback for preview
+  const [teamIndex, setTeamIndex] = useState(0);
 
   return (
     <div style={{ minHeight: "100vh", background: "#FAFAFA", fontFamily: "Inter, sans-serif" }}>
@@ -107,7 +108,7 @@ export default function CompanyPage() {
         {/* Meta Stats */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: "1.25rem", marginBottom: "3rem", fontSize: "0.85rem", color: INK_LIGHT, fontWeight: 500 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><Users size={16} /> {company.memberCount} members</div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LayoutGrid size={16} /> {company.demos} demos shipped</div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><LayoutGrid size={16} /> {company.demos} shipped</div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}><Calendar size={16} /> Founded {company.founded}</div>
           <div style={{ background: "#F1F5F9", padding: "0.25rem 0.6rem", borderRadius: 6, fontWeight: 600, color: INK_MID }}>{company.sector}</div>
         </div>
@@ -146,21 +147,40 @@ export default function CompanyPage() {
           <h2 style={{ fontSize: "1.2rem", fontWeight: 800, color: INK, margin: "0 0 1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <Users size={20} color={ORANGE} /> Team
           </h2>
-          <div style={{ display: "flex", overflowX: "auto", gap: "1rem", paddingBottom: "1rem", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", marginLeft: "-1.5rem", marginRight: "-1.5rem", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
-            {company.team.map((member: any) => (
-              <div key={member.name} style={{ scrollSnapAlign: "start", flex: "0 0 85%", maxWidth: "320px", background: "#fff", border: "1px solid rgba(91,63,248,0.1)", borderRadius: 16, padding: "1.25rem", display: "flex", gap: "1rem", alignItems: "center", boxShadow: "0 4px 12px rgba(91,63,248,0.03)" }}>
-                <div style={{ width: 48, height: 48, borderRadius: 12, background: PURPLE_XSOFT, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", fontWeight: 800, color: PURPLE, flexShrink: 0 }}>
-                  {member.avatar}
-                </div>
-                <div>
-                  <h4 style={{ fontSize: "0.95rem", fontWeight: 700, color: INK, margin: "0 0 0.15rem" }}>{member.name}</h4>
-                  <p style={{ fontSize: "0.8rem", color: INK_LIGHT, margin: "0 0 0.4rem" }}>{member.role}</p>
-                  <div style={{ display: "flex", gap: "0.75rem", fontSize: "0.75rem", color: INK_MID, fontWeight: 500 }}>
-                    <span>{member.attendance}% attendance</span>
-                    <span>{member.commits} commits</span>
+          <div style={{ position: "relative", overflow: "hidden", padding: "0.5rem 0" }}>
+            <div style={{ 
+              display: "flex", 
+              transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)", 
+              transform: `translateX(-${teamIndex * 100}%)`,
+              width: `${company.team.length * 100}%` 
+            }}>
+              {company.team.map((member: any) => (
+                <div key={member.name} style={{ width: `${100 / company.team.length}%`, padding: "0 0.2rem" }}>
+                  <div style={{ background: "#fff", border: "1px solid rgba(91,63,248,0.1)", borderRadius: 16, padding: "1.25rem", display: "flex", gap: "1rem", alignItems: "center", boxShadow: "0 4px 12px rgba(91,63,248,0.03)" }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 12, background: PURPLE_XSOFT, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", fontWeight: 800, color: PURPLE, flexShrink: 0 }}>
+                      {member.avatar}
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: "0.95rem", fontWeight: 700, color: INK, margin: "0 0 0.15rem" }}>{member.name}</h4>
+                      <p style={{ fontSize: "0.8rem", color: INK_LIGHT, margin: "0 0 0.4rem" }}>{member.role}</p>
+                      <div style={{ display: "flex", gap: "0.75rem", fontSize: "0.75rem", color: INK_MID, fontWeight: 500 }}>
+                        <span>{member.attendance}% attendance</span>
+                        <span>{member.commits} commits</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem", marginTop: "1rem" }}>
+            {company.team.map((_: any, idx: number) => (
+              <button 
+                key={idx} 
+                onClick={() => setTeamIndex(idx)} 
+                style={{ width: 8, height: 8, borderRadius: "50%", background: teamIndex === idx ? PURPLE : "rgba(91,63,248,0.2)", border: "none", cursor: "pointer", padding: 0 }} 
+                aria-label={`Go to slide ${idx + 1}`}
+              />
             ))}
           </div>
         </div>

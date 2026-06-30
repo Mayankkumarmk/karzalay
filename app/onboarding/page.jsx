@@ -647,11 +647,23 @@ export default function OnboardingPage() {
     const fetchStatus = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const debugGate = urlParams.get("debug_gate");
+      const isApply = urlParams.get("apply") === "true";
+
       if (debugGate) {
         setGate(parseInt(debugGate, 10));
         setLoading(false);
         return;
       }
+
+      if (isApply) {
+        setRole("MEMBER");
+        setGate(2);
+        setMemberCompanyId(urlParams.get("company") || "");
+        setMemberRole(urlParams.get("role") || "");
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await fetch("/api/onboarding/status", { credentials: "include" });
         if (res.ok) {
