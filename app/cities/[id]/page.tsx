@@ -146,9 +146,9 @@ export default function CompanyPage() {
           <h2 style={{ fontSize: "1.2rem", fontWeight: 800, color: INK, margin: "0 0 1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <Users size={20} color={ORANGE} /> Team
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+          <div style={{ display: "flex", overflowX: "auto", gap: "1rem", paddingBottom: "1rem", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", marginLeft: "-1.5rem", marginRight: "-1.5rem", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
             {company.team.map((member: any) => (
-              <div key={member.name} style={{ background: "#fff", border: "1px solid rgba(91,63,248,0.1)", borderRadius: 16, padding: "1.25rem", display: "flex", gap: "1rem", alignItems: "center", boxShadow: "0 4px 12px rgba(91,63,248,0.03)" }}>
+              <div key={member.name} style={{ scrollSnapAlign: "start", flex: "0 0 85%", maxWidth: "320px", background: "#fff", border: "1px solid rgba(91,63,248,0.1)", borderRadius: 16, padding: "1.25rem", display: "flex", gap: "1rem", alignItems: "center", boxShadow: "0 4px 12px rgba(91,63,248,0.03)" }}>
                 <div style={{ width: 48, height: 48, borderRadius: 12, background: PURPLE_XSOFT, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", fontWeight: 800, color: PURPLE, flexShrink: 0 }}>
                   {member.avatar}
                 </div>

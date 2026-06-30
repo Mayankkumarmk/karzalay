@@ -192,7 +192,7 @@ export default function TalentBoard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          style={{ display: "flex", justifyContent: "center", alignItems: "flex-end", gap: "1rem", marginBottom: "2.5rem" }}
+          style={{ display: "flex", justifyContent: "center", alignItems: "flex-end", flexWrap: "wrap", gap: "1rem", marginBottom: "2.5rem" }}
         >
           {/* 2nd Place */}
           <motion.div
@@ -364,13 +364,14 @@ export default function TalentBoard() {
             borderRadius: 20,
             border: "1px solid rgba(91,63,248,0.1)",
             boxShadow: cardShadow,
-            overflow: "hidden",
+            overflowX: "auto",
           }}
         >
           {/* Table Header */}
           <div style={{
             display: "grid",
             gridTemplateColumns: "60px 2fr 1.5fr 100px 80px 120px",
+            minWidth: "800px",
             gap: "0.75rem",
             padding: "0.875rem 1.5rem",
             background: PURPLE_XSOFT,
@@ -399,6 +400,7 @@ export default function TalentBoard() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "60px 2fr 1.5fr 100px 80px 120px",
+                minWidth: "800px",
                 gap: "0.75rem",
                 padding: "0.875rem 1.5rem",
                 alignItems: "center",

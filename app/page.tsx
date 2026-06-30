@@ -149,7 +149,7 @@ export default function HomePage() {
       <section style={{ position: 'relative', background: '#F8F6FF', color: '#1C1233', padding: '104px 40px', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '-100px', right: '-80px', width: '480px', height: '480px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,77,255,0.08), transparent 65%)', filter: 'blur(30px)', animation: 'kzOrb 18s ease-in-out infinite' }} />
         
-        <div style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '64px', alignItems: 'center' }}>
+        <div style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', gap: '64px', alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: '13.5px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6C3CE0', marginBottom: '18px' }}>Proof of Work</div>
             <h2 style={{ fontWeight: 800, fontSize: '44px', lineHeight: 1.08, letterSpacing: '-0.025em', marginBottom: '22px' }}>
