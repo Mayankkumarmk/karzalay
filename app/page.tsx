@@ -21,14 +21,14 @@ export default function HomePage() {
           filter: 'blur(20px)', animation: 'kzOrb 16s ease-in-out infinite', pointerEvents: 'none' 
         }} />
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '56px', alignItems: 'center', position: 'relative' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', gap: '56px', alignItems: 'center', position: 'relative' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '7px 15px', borderRadius: '999px', background: 'rgba(108,60,224,0.09)', color: '#6C3CE0', fontSize: '13.5px', fontWeight: 600, marginBottom: '26px' }}>
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#6C3CE0', boxShadow: '0 0 0 4px rgba(108,60,224,0.18)' }} />
               🚀 Now live across 12 cities
             </div>
             
-            <h1 style={{ fontWeight: 900, fontSize: 'clamp(3rem, 5vw, 64px)', lineHeight: 1.05, letterSpacing: '-0.035em', marginBottom: '24px' }}>
+            <h1 style={{ fontWeight: 900, fontSize: 'clamp(2.5rem, 8vw, 64px)', lineHeight: 1.05, letterSpacing: '-0.035em', marginBottom: '24px' }}>
               Sprint faster.<br />
               <span style={{ background: 'linear-gradient(120deg,#7C4DFF,#A06BFF 60%,#FF8BC2)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
                 Build together.

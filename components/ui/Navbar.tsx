@@ -132,7 +132,7 @@ export function Navbar() {
       </div>
       
       <style>{`
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .kz-nav-desktop-only { display: none !important; }
           .kz-hamburger { display: flex !important; }
           header { padding: 16px 20px !important; }

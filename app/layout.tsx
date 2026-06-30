@@ -36,6 +36,12 @@ export const metadata: Metadata = {
   description: "Browse and join high-velocity startup cohorts across Indian cities. Filter by city, find your team, and build fast.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

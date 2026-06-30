@@ -33,8 +33,6 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
 
         if (isCompleted && pathname.startsWith('/onboarding')) {
           router.push('/dashboard');
-        } else if (!isCompleted && pathname.startsWith('/dashboard')) {
-          router.push('/onboarding');
         } else {
           setStatusLoading(false);
         }
