@@ -200,7 +200,7 @@ export default function CompanyPage() {
                       {role.type}
                     </span>
                   </div>
-                  <Link href="/onboarding" style={{ 
+                  <Link href={`/apply?company=${companyId}&role=${encodeURIComponent(role.title)}`} style={{ 
                     background: ORANGE, color: "#fff", textDecoration: "none", padding: "0.6rem 1.25rem", borderRadius: 8, 
                     fontSize: "0.9rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem", boxShadow: "0 4px 12px rgba(234,88,12,0.2)" 
                   }}>

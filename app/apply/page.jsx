@@ -30,7 +30,6 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { OnboardingGuard } from "@/components/OnboardingGuard";
 import { io, Socket } from "socket.io-client";
 
 /* ─── Design Tokens (match landing page) ─── */
@@ -59,9 +58,9 @@ const cardShadowHover = "0 16px 40px rgba(91,63,248,0.13)";
 
 /* ─── Step Config ─── */
 const STEPS = [
-  { num: 1, label: "Profile", icon: User, desc: "Who you are" },
-  { num: 2, label: "Choose Path", icon: role => role === "LEAD" ? Rocket : Building2, desc: "Your journey" },
-  { num: 3, label: "Get Started", icon: ClipboardList, desc: "First action" },
+  { num: 1, label: "Details", icon: User, desc: "Your info" },
+  { num: 2, label: "Apply", icon: Building2, desc: "Join company" },
+  { num: 3, label: "Finish", icon: CheckCircle2, desc: "Done" },
 ];
 
 /* ─── Animated Background Particles ─── */
@@ -571,7 +570,7 @@ function WaitingState({ onSimulate }) {
 /* ═══════════════════════════════════════════
    MAIN ONBOARDING PAGE
    ═══════════════════════════════════════════ */
-export default function OnboardingPage() {
+export default function ApplyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, fetchUser } = useAuth();
@@ -634,53 +633,20 @@ export default function OnboardingPage() {
   const [memberReason, setMemberReason] = useState("");
 
   useEffect(() => {
-    if (user && !name) {
-      const timeoutId = setTimeout(() => {
-        setName(user.name || "");
-        setRole(user.role || "MEMBER");
-        setMemberEmail(user.email || "");
-      }, 0);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [user, name]);
-
-  useEffect(() => {
-    const fetchStatus = async () => {
-      const debugGate = searchParams.get("debug_gate");
-      const isApply = searchParams.get("apply") === "true";
-
-      if (debugGate) {
-        setGate(parseInt(debugGate, 10));
-        setLoading(false);
-        return;
-      }
-
-      if (isApply) {
-        setRole("MEMBER");
-        setGate(2);
-        setMemberCompanyId(searchParams.get("company") || "");
-        setMemberRole(searchParams.get("role") || "");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const res = await fetch("/api/onboarding/status", { credentials: "include" });
-        if (res.ok) {
-          const data = await res.json();
-          setGate(data.gate || 1);
-          if (data.status === "completed" || data.gate > 3) {
-            router.push("/");
-          }
-        }
-      } catch (err) {
-        console.error("Status fetch failed", err);
-      } finally {
-        setLoading(false);
-      }
+    const initFlow = () => {
+      setRole("MEMBER");
+      setGate(1);
+      
+      const companyId = searchParams.get("company");
+      const roleName = searchParams.get("role");
+      
+      if (companyId) setMemberCompanyId(companyId);
+      if (roleName) setMemberRole(roleName);
+      
+      setLoading(false);
     };
-    fetchStatus();
-  }, [router, searchParams]);
+    initFlow();
+  }, [searchParams]);
 
   useEffect(() => {
     if (gate === 2 && role === "MEMBER") {
@@ -723,16 +689,13 @@ export default function OnboardingPage() {
 
   const handleGate2MemberSubmit = async (e) => {
     e.preventDefault();
-    // Bypassed validation for testing
     setError("");
     setActionLoading(true);
-    // In a real app we'd save this to DB here
     setTimeout(() => {
       setActionLoading(false);
-      setGate(3);
+      setGate(2);
     }, 400);
   };
-
   const handleMemberApply = async (e) => {
     e.preventDefault();
     // Bypassed validation for testing
@@ -825,8 +788,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <OnboardingGuard>
-      <div style={{ minHeight: "100vh", background: "linear-gradient(180deg, #F5F3FF 0%, #fff 30%, #fff 70%, #F5F3FF 100%)", position: "relative" }}>
+          <div style={{ minHeight: "100vh", background: "linear-gradient(180deg, #F5F3FF 0%, #fff 30%, #fff 70%, #F5F3FF 100%)", position: "relative" }}>
         <FloatingParticles />
         
         {!completed && (
@@ -971,123 +933,9 @@ export default function OnboardingPage() {
                 </div>
               </GlassCard>
             ) : gate === 1 ? (
-              /* ═══════ GATE 1: PROFILE ═══════ */
+              /* ═══════ GATE 1: YOUR DETAILS ═══════ */
               <GlassCard key="gate1">
-                <Eyebrow>Step 1 of 3</Eyebrow>
-                <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: INK, letterSpacing: "-0.03em", margin: "0 0 0.25rem" }}>
-                  Complete your profile
-                </h2>
-                <p style={{ fontSize: "0.85rem", color: INK_LIGHT, margin: "0 0 1.75rem" }}>
-                  Let's set up your identity on Karzalay. This helps us track your contributions and build your credential.
-                </p>
-
-                <form onSubmit={handleGate1Submit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: INK_MID, marginBottom: "0.4rem" }}>
-                      Full Name
-                    </label>
-                    <KzInput value={name} onChange={e => setName(e.target.value)} placeholder="Your full name" icon={User} />
-                  </div>
-
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: INK_MID, marginBottom: "0.6rem" }}>
-                      Choose your role
-                    </label>
-                    <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                      <RoleCard
-                        role="MEMBER"
-                        selected={role === "MEMBER"}
-                        onClick={() => setRole("MEMBER")}
-                        icon={Briefcase}
-                        title="Member"
-                        description="Join a simulated company, work on real projects, and earn credentials."
-                        features={["Join existing companies", "Work in sprints", "Earn verified credentials"]}
-                      />
-                      <RoleCard
-                        role="LEAD"
-                        selected={role === "LEAD"}
-                        onClick={() => setRole("LEAD")}
-                        icon={Crown}
-                        title="Lead"
-                        description="Create and manage your own simulated company, recruit members, and lead sprints."
-                        features={["Create your company", "Recruit team members", "Manage sprints & approvals"]}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: INK_MID, marginBottom: "0.4rem" }}>
-                      Globe Username <span style={{ color: PURPLE }}>*</span>
-                    </label>
-                    <KzInput value={github} onChange={e => setGithub(e.target.value)} placeholder="octocat" icon={Globe} required />
-                    <p style={{ fontSize: "0.75rem", color: INK_LIGHT, margin: "0.35rem 0 0" }}>
-                      Required for commit tracking and your verifiable credential.
-                    </p>
-                  </div>
-
-                  <div style={{ marginTop: "0.5rem" }}>
-                    <KzButton type="submit" loading={actionLoading}>
-                      Continue <ArrowRight size={18} />
-                    </KzButton>
-                  </div>
-                </form>
-              </GlassCard>
-
-            ) : gate === 2 ? (
-              /* ═══════ GATE 2: CHOOSE PATH ═══════ */
-              <GlassCard key="gate2">
-                <Eyebrow>Step 2 of 3</Eyebrow>
-                {role === "LEAD" ? (
-                  startupApplied ? (
-                    <div style={{ textAlign: "center", padding: "2rem 0" }}>
-                      <div style={{
-                        width: 64, height: 64, borderRadius: "50%", background: GREEN_SOFT, 
-                        display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.5rem"
-                      }}>
-                        <CheckCircle2 size={32} color={GREEN} />
-                      </div>
-                      <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: INK, marginBottom: "0.75rem" }}>
-                        Application Received
-                      </h2>
-                      <p style={{ fontSize: "0.95rem", color: INK_LIGHT, margin: "0 auto 2rem", maxWidth: 400, lineHeight: 1.5 }}>
-                        We will review your application and let you know if your documentation is approved. You can go ahead with listing down your company, creating positions, and inviting people to work for you.
-                      </p>
-                      <KzButton onClick={() => setGate(3)}>
-                        Continue to Next Step <ArrowRight size={18} />
-                      </KzButton>
-                    </div>
-                  ) : (
-                  <>
-                    <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: INK, letterSpacing: "-0.03em", margin: "0 0 0.25rem" }}>
-                      Create your Startup
-                    </h2>
-                    <p style={{ fontSize: "0.85rem", color: INK_LIGHT, margin: "0 0 1.75rem" }}>
-                      Set up your company workspace to start managing your team and shipping products.
-                    </p>
-                    <form onSubmit={handleCreateStartup} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-                      <div>
-                        <label style={{ fontSize: "0.85rem", fontWeight: 600, color: INK_MID }}>Startup Name</label>
-                        <KzInput value={startupName} onChange={e => setStartupName(e.target.value)} placeholder="Acme Corp" icon={Building2} required />
-                      </div>
-                      <div>
-                        <label style={{ fontSize: "0.85rem", fontWeight: 600, color: INK_MID }}>City / Region</label>
-                        <KzInput value={startupCity} onChange={e => setStartupCity(e.target.value)} placeholder="Mumbai, India" icon={MapPin} required />
-                      </div>
-                      <div>
-                        <label style={{ fontSize: "0.85rem", fontWeight: 600, color: INK_MID }}>Documentation Link</label>
-                        <KzInput value={startupDocUrl} onChange={e => setStartupDocUrl(e.target.value)} placeholder="https://notion.so/..." icon={LinkIcon} required />
-                        <p style={{ fontSize: "0.75rem", color: INK_LIGHT, marginTop: "0.35rem" }}>
-                          Link to your pitch deck, Notion workspace, or company website.
-                        </p>
-                      </div>
-                      <KzButton type="submit" loading={actionLoading}>
-                        <Rocket size={18} /> Create Startup
-                      </KzButton>
-                    </form>
-                  </>
-                  )
-                ) : (
-                  <>
+                <Eyebrow>Step 1 of 2</Eyebrow>
                     <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: INK, letterSpacing: "-0.03em", margin: "0 0 0.25rem" }}>
                       Your Details
                     </h2>
@@ -1219,94 +1067,18 @@ export default function OnboardingPage() {
                         Continue <ArrowRight size={18} />
                       </KzButton>
                     </form>
-                  </>
-                )}
               </GlassCard>
 
-            ) : gate === 3 ? (
-              /* ═══════ GATE 3: GET STARTED ═══════ */
-              <GlassCard key="gate3">
-                <Eyebrow>Step 3 of 3</Eyebrow>
-                {role === "LEAD" ? (
-                  <>
-                    <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: INK, letterSpacing: "-0.03em", margin: "0 0 0.25rem" }}>
-                      Invite your Team
-                    </h2>
-                    <p style={{ fontSize: "0.85rem", color: INK_LIGHT, margin: "0 0 1.75rem" }}>
-                      Your workspace is ready. Share this invite link with potential team members.
-                    </p>
-
-                    <div style={{
-                      padding: "1.5rem",
-                      background: PURPLE_XSOFT,
-                      border: `1.5px dashed ${PURPLE_SOFT}`,
-                      borderRadius: 16,
-                      marginBottom: "1.5rem",
-                      textAlign: "center",
-                    }}>
-                      <Users size={32} color={PURPLE} style={{ margin: "0 auto 0.75rem" }} />
-                      <p style={{ fontWeight: 700, fontSize: "0.9rem", color: INK, margin: "0 0 0.5rem" }}>
-                        Share this Invite Link
-                      </p>
-                      <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        justifyContent: "center",
-                        marginBottom: "0.75rem",
-                      }}>
-                        <code style={{
-                          fontSize: "0.8rem",
-                          color: PURPLE,
-                          background: "rgba(91,63,248,0.08)",
-                          padding: "0.4rem 0.75rem",
-                          borderRadius: 8,
-                          fontFamily: "monospace",
-                        }}>
-                          https://karzalay.app/join/acme-corp-123
-                        </code>
-                      </div>
-                      <motion.button
-                        onClick={handleCopyLink}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
-                        style={{
-                          padding: "0.5rem 1.25rem",
-                          borderRadius: 8,
-                          border: `1.5px solid ${PURPLE_SOFT}`,
-                          background: copied ? GREEN_SOFT : "#fff",
-                          color: copied ? GREEN : PURPLE,
-                          fontSize: "0.8rem",
-                          fontWeight: 700,
-                          fontFamily: "inherit",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "0.4rem",
-                          transition: "all 0.2s ease",
-                        }}
-                      >
-                        {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy Link</>}
-                      </motion.button>
-                    </div>
-
-                    <div style={{ display: "flex", gap: "1rem" }}>
-                      <KzButton variant="secondary" onClick={handleSkipInvite} style={{ flex: 1 }}>
-                        Skip for now
-                      </KzButton>
-                      <KzButton onClick={handleSkipInvite} style={{ flex: 1 }}>
-                        Continue <ArrowRight size={18} />
-                      </KzButton>
-                    </div>
-                  </>
-                ) : (
-                  <>
+            ) : gate === 2 ? (
+              /* ═══════ GATE 2: SELECT COMPANY ═══════ */
+              <GlassCard key="gate2">
+                <Eyebrow>Step 2 of 2</Eyebrow>
                     <div style={{ textAlign: "center", marginBottom: "2rem" }}>
                       <h2 style={{ fontSize: "2rem", fontWeight: 800, color: INK, letterSpacing: "-0.03em", margin: "0 0 0.5rem" }}>
-                        Join a company
+                        Select a company
                       </h2>
                       <p style={{ fontSize: "1rem", color: INK_LIGHT, margin: 0, fontWeight: 500 }}>
-                        No experience required. Just show up and start working.
+                        Apply for an open position and start working.
                       </p>
                     </div>
 
@@ -1397,8 +1169,6 @@ export default function OnboardingPage() {
                         </div>
                       </>
                     )}
-                  </>
-                )}
               </GlassCard>
             ) : null}
           </AnimatePresence>
@@ -1416,10 +1186,10 @@ export default function OnboardingPage() {
               opacity: 0.6,
             }}
           >
-            Step {gate} of 3 · You can complete this in under 2 minutes
+            Step {gate} of 2 · You can complete this in under 2 minutes
           </motion.p>
         </div>
       </div>
-    </OnboardingGuard>
+    
   );
 }

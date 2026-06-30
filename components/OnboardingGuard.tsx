@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 export function OnboardingGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { user, isLoading: authLoading } = useAuth();
   const [statusLoading, setStatusLoading] = useState(true);
   const [gate, setGate] = useState<number | null>(null);
@@ -21,6 +22,7 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
 
     const checkStatus = async () => {
       try {
+        const isApply = searchParams.get('apply') === 'true';
         const res = await fetch('/api/onboarding/status', { credentials: 'include' });
         if (!res.ok) {
           throw new Error('Failed to fetch status');
@@ -31,8 +33,8 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
 
         const isCompleted = currentGate > 3 || data.status === 'completed';
 
-        if (isCompleted && pathname.startsWith('/onboarding')) {
-          router.push('/dashboard');
+        if (isCompleted && pathname.startsWith('/onboarding') && !isApply) {
+          router.push('/');
         } else if (!isCompleted && !pathname.startsWith('/onboarding') && pathname !== '/talent' && pathname !== '/cities' && !pathname.startsWith('/cities/')) {
           router.push('/onboarding');
         } else {
