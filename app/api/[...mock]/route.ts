@@ -43,7 +43,9 @@ async function handleRequest(request: NextRequest) {
   if (pathname === '/api/auth/login' && request.method === 'POST') {
     const res = NextResponse.json({ id: '1', name: 'Mock User', email: payload.email, role: 'MEMBER' });
     res.cookies.set('sessionId', 'mock_session', { path: '/', httpOnly: true });
-    res.cookies.set('mockGate', '1', { path: '/' }); // reset gate on login
+    if (!request.cookies.has('mockGate')) {
+      res.cookies.set('mockGate', '1', { path: '/' });
+    }
     res.cookies.set('mockRole', 'MEMBER', { path: '/' });
     res.cookies.set('mockName', 'Mock User', { path: '/' });
     return res;

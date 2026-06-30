@@ -33,6 +33,8 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
 
         if (isCompleted && pathname.startsWith('/onboarding')) {
           router.push('/dashboard');
+        } else if (!isCompleted && !pathname.startsWith('/onboarding') && pathname !== '/talent' && pathname !== '/cities' && !pathname.startsWith('/cities/')) {
+          router.push('/onboarding');
         } else {
           setStatusLoading(false);
         }

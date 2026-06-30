@@ -622,7 +622,6 @@ export default function OnboardingPage() {
     if (user && !name) {
       setName(user.name || "");
       setRole(user.role || "MEMBER");
-      setMemberEmail(user.email || "");
     }
   }, [user, name]);
 
