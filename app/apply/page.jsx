@@ -570,7 +570,7 @@ function WaitingState({ onSimulate }) {
 /* ═══════════════════════════════════════════
    MAIN ONBOARDING PAGE
    ═══════════════════════════════════════════ */
-export default function ApplyPage() {
+function ApplyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, fetchUser } = useAuth();
@@ -1191,5 +1191,13 @@ export default function ApplyPage() {
         </div>
       </div>
     
+  );
+}
+
+export default function ApplyPage() {
+  return (
+    <React.Suspense fallback={<div style={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", background: "#FAF8FF" }}>Loading...</div>}>
+      <ApplyContent />
+    </React.Suspense>
   );
 }

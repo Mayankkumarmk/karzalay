@@ -571,7 +571,7 @@ function WaitingState({ onSimulate }) {
 /* ═══════════════════════════════════════════
    MAIN ONBOARDING PAGE
    ═══════════════════════════════════════════ */
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, fetchUser } = useAuth();
@@ -1421,5 +1421,13 @@ export default function OnboardingPage() {
         </div>
       </div>
     </OnboardingGuard>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <React.Suspense fallback={<div style={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", background: "#FAF8FF" }}>Loading...</div>}>
+      <OnboardingContent />
+    </React.Suspense>
   );
 }
